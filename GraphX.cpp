@@ -26,6 +26,40 @@ class Hash {
 		return new_hash;
 	}
 };
+ /* solution of hash
+  // Insert-or-get for an int label
+int hash(int x){
+        return hash({x,0,0});
+}
+
+// Insert-or-get for a pair label
+int hash(const tuple<int,int>& x){
+        return hash({get<0>(x),get<1>(x),0});
+}
+
+// Insert-or-get for a triple label
+int hash(const tuple<int,int,int>& x){
+        auto it = hash_table.find(x);
+        if(it != hash_table.end()) return it->second;
+        int new_hash = (int)hash_table.size();
+        hash_table.emplace(x, new_hash);
+        return new_hash;
+}
+
+// Non-inserting existence checks (int x) const {
+        return contains(tuple<int,int,int>{x,0,0});
+}
+bool contains(const tuple<int,int>& x) const {
+        return contains(tuple<int,int,int>{get<0>(x), get<1>(x), 0});
+}
+bool contains(const tuple<int,int,int>& x) const {
+        return hash_table.find(x) != hash_table.end();
+}
+
+// Number of assigned ids
+int size() const { return (int)hash_table.size(); }
+ */
+
 
 class Graph {
 
@@ -75,7 +109,64 @@ class Graph {
 		}
 
 };
+/*
+ bool is_directed;
 
+public:
+        vector<vector<pair<int,ll>>> adj;
+    int n;
+    int N = 0; // legacy, not used for sizing - kept for compatibility
+    Hash h;
+
+        Graph(int n_, bool is_directed_ = true){
+                n = n_; is_directed = is_directed_;
+                // start with empty adjacency list and grow on demand
+                adj.clear();
+        }
+
+        int hash(int u, int v){
+                return h.hash({u,v});
+        }
+        int hash(int u, int v, int k){
+                return h.hash({u,v,k});
+        }
+
+        void add_edge(int uR, int vR, ll c=0){
+          int u = h.hash(uR), v = h.hash(vR);
+          add_edge_internal(u, v, c);
+        }
+        void add_edge(const tuple<int,int>& uR, const tuple<int,int>& vR, ll c=0){
+          int u = h.hash(uR), v = h.hash(vR);
+          add_edge_internal(u, v, c);
+        }
+        void add_edge(const tuple<int,int,int>& uR, const tuple<int,int,int>& vR, ll c=0){
+          int u = h.hash(uR), v = h.hash(vR);
+          add_edge_internal(u, v, c);
+        }
+
+
+private :
+
+  // Ensure adjacency list can hold node index 'idx'
+  void ensure_node_exists(size_t idx){
+          if (idx >= adj.size()) adj.resize(idx + 1);
+  }
+
+  void add_edge_internal(int u, int v, ll c=0){
+                size_t need = (size_t)max(u, v);
+                ensure_node_exists(need);
+                add_edge_weighted_undirected(u, v, c);
+                if(!is_directed){
+                        ensure_node_exists(need);
+                        add_edge_weighted_undirected(v, u, c);
+                }
+        }
+        void add_edge_weighted_undirected(int u, int v, ll c) {
+                pair<int,ll> p = make_pair(v,c);
+                ensure_node_exists(u);
+                adj[u].push_back(p);
+}
+	*/
 class BFS {
     vector<ll>min_dist_from_source;
     vector<bool> visited;
@@ -168,5 +259,84 @@ class BFS {
     }
 
 };
+/*
+public:
+  BFS(Graph *g_) {
+      g = g_;
+      clear();
+  }
+
+    void clear() {
+            // resize according to the current graph adjacency size (nodes created so far)
+            // also consider hashed nodes that may exist without edges
+            size_t sz = max(g->adj.size(), (size_t)g->h.size());
+            min_dist_from_source.clear();
+            min_dist_from_source.resize(sz, -1);
+            visited.clear();
+            visited.resize(sz, false);
+    }
+
+  void run(int sourceR) {
+    int source = (g->h).hash(sourceR);
+    // Ensure arrays cover the source index
+    if ((size_t)source >= min_dist_from_source.size()){
+        size_t newsz = (size_t)source + 1;
+        min_dist_from_source.resize(newsz, -1);
+        visited.resize(newsz, false);
+    }
+    run_internal(source);
+  }
+  void run(tuple<int,int> sourceR) {
+    int source = (g->h).hash(sourceR);
+    if ((size_t)source >= min_dist_from_source.size()){
+        size_t newsz = (size_t)source + 1;
+        min_dist_from_source.resize(newsz, -1);
+        visited.resize(newsz, false);
+    }
+    run_internal(source);
+  }
+  void run(tuple<int,int,int> sourceR) {
+    int source = (g->h).hash(sourceR);
+    if ((size_t)source >= min_dist_from_source.size()){
+        size_t newsz = (size_t)source + 1;
+        min_dist_from_source.resize(newsz, -1);
+        visited.resize(newsz, false);
+    }
+    run_internal(source);
+  }
+
+
+  int min_dist(int targetR){
+    int target = (g->h).hash(targetR);
+    if ((size_t)target >= min_dist_from_source.size()) return -1;
+    return min_dist_internal(target);
+  }
+  int min_dist(tuple<int,int> targetR){
+    int target = (g->h).hash(targetR);
+    if ((size_t)target >= min_dist_from_source.size()) return -1;
+    return min_dist_internal(target);
+  }
+  int min_dist(tuple<int,int,int> targetR){
+    int target = (g->h).hash(targetR);
+    if ((size_t)target >= min_dist_from_source.size()) return -1;
+    return min_dist_internal(target);
+  }
+
+  bool is_visited(int targetR){
+    int target = (g->h).hash(targetR);
+    if ((size_t)target >= visited.size()) return false;
+    return is_visited_internal(target);
+  }
+  bool is_visited(tuple<int,int> targetR){
+    int target = (g->h).hash(targetR);
+    if ((size_t)target >= visited.size()) return false;
+    return is_visited_internal(target);
+  }
+  bool is_visited(tuple<int,int,int> targetR){
+    int target = (g->h).hash(targetR);
+    if ((size_t)target >= visited.size()) return false;
+    return is_visited_internal(target);
+  }
+*/
 //END COPYING HERE
 //********************BLACKBOX END******************
